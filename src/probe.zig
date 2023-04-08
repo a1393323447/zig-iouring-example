@@ -80,7 +80,7 @@ const IOUringProbeSet = extern struct {
     probe: io_uring_probe,
     ops: [PROBE_CNT]io_uring_probe_op,
 
-	const PROBE_CNT = @enumToInt(IOUringOp.LAST);
+    const PROBE_CNT = @enumToInt(IOUringOp.LAST);
 
     const Self = @This();
 
