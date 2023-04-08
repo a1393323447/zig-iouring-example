@@ -96,9 +96,9 @@ const IOUringProbeSet = extern struct {
     }
 
 	pub fn supportedOps(self: *const Self) []const io_uring_probe_op {
-		const last_op = @intCast(usize, @enumToInt(self.probe.last_op));
-		return self.ops[0..(last_op + 1)];
-	}
+        const last_op = @intCast(usize, @enumToInt(self.probe.last_op));
+        return self.ops[0..(last_op + 1)];
+    }
 };
 
 pub fn main() !void {
