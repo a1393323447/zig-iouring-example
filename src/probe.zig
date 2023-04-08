@@ -83,7 +83,8 @@ const IOUringProbeSet = extern struct {
 	const PROBE_CNT = @enumToInt(IOUringOp.LAST);
 
     const Self = @This();
-    fn get() !Self {
+
+    pub fn get() !Self {
         var probe_set = std.mem.zeroInit(Self, .{});
         var ring = try linux.IO_Uring.init(2, 0);
         defer ring.deinit();
@@ -93,6 +94,11 @@ const IOUringProbeSet = extern struct {
         }
         return probe_set;
     }
+
+	pub fn supportedOps(self: *const Self) []const io_uring_probe_op {
+		const last_op = @intCast(usize, @enumToInt(self.probe.last_op));
+		return self.ops[0..(last_op + 1)];
+	}
 };
 
 pub fn main() !void {
@@ -110,4 +116,9 @@ pub fn main() !void {
             std.debug.print("no\n", .{});
         }
     }
+
+	std.debug.print("\nTo test supportedOps\n\n", .{});
+	for (probe_set.supportedOps()) |op| {
+		std.debug.print("{s}: yes\n", .{@tagName(op.op)});
+	}
 }
