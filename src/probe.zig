@@ -51,8 +51,6 @@ const IOUringOp = enum(u8) {
     URING_CMD,
     SEND_ZC,
     SENDMSG_ZC,
-
-    LAST,
 };
 
 pub const io_uring_probe_op = extern struct {
@@ -78,9 +76,9 @@ pub const io_uring_probe = extern struct {
 
 const IOUringProbeSet = extern struct {
     probe: io_uring_probe,
-    ops: [PROBE_CNT]io_uring_probe_op,
+    ops: [OP_CNT]io_uring_probe_op,
 
-    const PROBE_CNT = @enumToInt(IOUringOp.LAST);
+    const OP_CNT = @typeInfo(IOUringOp).Enum.fields.len;
 
     const Self = @This();
 
@@ -88,7 +86,7 @@ const IOUringProbeSet = extern struct {
         var probe_set = std.mem.zeroInit(Self, .{});
         var ring = try linux.IO_Uring.init(2, 0);
         defer ring.deinit();
-        const res = linux.io_uring_register(ring.fd, linux.IORING_REGISTER.REGISTER_PROBE, &probe_set, PROBE_CNT);
+        const res = linux.io_uring_register(ring.fd, linux.IORING_REGISTER.REGISTER_PROBE, &probe_set, OP_CNT);
         if (@bitCast(isize, res) < 0) {
             return error.get_probe_failed;
         }
@@ -107,10 +105,9 @@ pub fn main() !void {
     std.debug.print("This program won't work on kernel version earlier than 5.6\n", .{});
     const probe_set = try IOUringProbeSet.get();
     std.debug.print("Report of your kernel's list of supported io_uring operations:\n", .{});
-    const last = @intCast(usize, @enumToInt(IOUringOp.LAST));
-    for (0..(last-1)) |i| {
-        std.debug.print("{s}: ", .{@tagName(@intToEnum(IOUringOp, i))});
-        if (probe_set.ops[i].flags & linux.IO_URING_OP_SUPPORTED != 0) {
+    for (probe_set.ops) |probe_op| {
+        std.debug.print("{s}: ", .{@tagName(probe_op.op)});
+        if (probe_op.flags & linux.IO_URING_OP_SUPPORTED != 0) {
             std.debug.print("yes\n", .{});
         } else {
             std.debug.print("no\n", .{});
@@ -118,7 +115,7 @@ pub fn main() !void {
     }
 
     std.debug.print("\nTo test supportedOps\n\n", .{});
-    for (probe_set.supportedOps()) |op| {
-        std.debug.print("{s}: yes\n", .{@tagName(op.op)});
+    for (probe_set.supportedOps()) |probe_op| {
+        std.debug.print("{s}: yes\n", .{@tagName(probe_op.op)});
     }
 }
