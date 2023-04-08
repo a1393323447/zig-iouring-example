@@ -117,8 +117,8 @@ pub fn main() !void {
         }
     }
 
-	std.debug.print("\nTo test supportedOps\n\n", .{});
-	for (probe_set.supportedOps()) |op| {
-		std.debug.print("{s}: yes\n", .{@tagName(op.op)});
-	}
+    std.debug.print("\nTo test supportedOps\n\n", .{});
+    for (probe_set.supportedOps()) |op| {
+        std.debug.print("{s}: yes\n", .{@tagName(op.op)});
+    }
 }
